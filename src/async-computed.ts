@@ -24,7 +24,7 @@ export interface AsyncComputedOptions<T> {
  * completed, the previous run will have its AbortSignal aborted, and the result
  * of the previous run will be ignored.
  */
-export class AsyncComputed<T> {
+export class AsyncComputed<T> implements Disposable {
   // Whether we have been notified of a pending update from the watcher. This is
   // set synchronously when any dependencies of the compute function change.
   #isNotified = false;
@@ -225,5 +225,19 @@ export class AsyncComputed<T> {
    */
   run() {
     this.#computed.get();
+  }
+
+  /**
+   * Ensure release of resources when the AsyncComputed is no longer needed.
+   */
+  [Symbol.dispose]() {
+    this.abort();
+  }
+
+  /**
+   * Aborts the currently running computation, if any.
+   */
+  abort() {
+    this.#currentAbortController?.abort();
   }
 }
